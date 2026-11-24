@@ -84,7 +84,7 @@ test("JT retains independent reviews and content and media acceptance", () => {
   assert.ok(readme.includes("Codex 與 CodeRabbit 是每個 PR 各自獨立的審查條件"));
   const chineseSite = readFileSync(new URL("site/index.html", repositoryRoot), "utf8");
   assert.ok(chineseSite.includes("確認觸及 rate／usage limit，或確認審查已結束但未產生結果"));
-  assert.ok(chineseSite.includes("如果兩者都沒有完成最新提交的審查，停止交付"));
+  assert.ok(chineseSite.includes("如果兩者都未完成原始送審提交的審查，停止交付"));
   assert.ok(chineseSite.includes("合併前必須解決 Codex 與 CodeRabbit 的可採取行動 findings 並驗證修正。"));
   assert.ok(chineseSite.includes("每次內容 audit 都須記錄 changed paths、claim/source pairs、link/example 結果、格式或頁面佈局變更的渲染輸出證據，及已審查 commit SHA"));
   assert.ok(chineseSite.includes("格式或頁面佈局變更時檢查渲染結果"));
@@ -92,7 +92,7 @@ test("JT retains independent reviews and content and media acceptance", () => {
   const englishSite = readFileSync(new URL("site/en/index.html", repositoryRoot), "utf8");
   assert.ok(englishSite.includes("Documentation/content-only PRs confirm there are no code, operational-policy, or configuration changes"));
   assert.ok(englishSite.includes("confirms a rate/usage limit or confirms that a review finished without a result"));
-  assert.ok(englishSite.includes("If neither reviewer completes a review of the current head, stop delivery."));
+  assert.ok(englishSite.includes("If neither reviewer completes the original review, stop delivery."));
   assert.ok(englishSite.includes("Resolve actionable Codex and CodeRabbit findings and verify fixes before merging."));
   assert.ok(englishSite.includes("For every content audit, record changed paths, claim/source pairs, link/example results, rendered-output evidence for formatting or page layout changes, and the audited commit SHA"));
   assert.ok(englishSite.includes("Inspect rendered output only when formatting or page layout changes"));
@@ -145,8 +145,8 @@ test("JT Harness 规定一次审查、CodeRabbit 退路和自动合并条件", (
     "Codex and CodeRabbit are independent of each other",
     "Lint, required checks and mergeability below still apply",
     "Wait for queued or running reviews to finish",
-    "per-path coverage from each of Codex and CodeRabbit that is not ignored",
-    "Do not request a second complete Codex or CodeRabbit review",
+    "per-path coverage of the original review head from each of Codex and CodeRabbit that is not ignored",
+    "Do not request a second full or focused correction review",
     "required checks pass on the current head",
     "full-project lint locally",
     "including failures already present on main",
@@ -169,10 +169,10 @@ test("size policy submits complete scope first and fails incomplete reviews clos
     "Recompute after stack rebase", "preserve integration validation",
     "150 for Free/Essentials", "300 for Team/Advanced/Enterprise", "100–300 for OSS",
     "300 or more changed files", "Unpublished does not mean unlimited",
-    "Apply an exception to at most one reviewer, and only if the other completed its review on the current head",
-    "If neither reviewer completed its review on the current head, stop delivery, even if both otherwise qualify for exceptions",
+    "Apply an exception to at most one reviewer, and only if the other completed its review on the original review head",
+    "If neither completed that review, stop delivery, even if both otherwise qualify for exceptions",
     "A generic error, failed or incomplete review, missing status, and queued or running review do not qualify",
-    "Require a complete result covering current HEAD", "quota-limited reviews never count as Pass",
+    "Require a complete result covering the original review head", "quota-limited reviews never count as Pass",
   ]) assert.ok(skill.includes(rule), `Missing policy: ${rule}`);
   assert.doesNotMatch(skill, /quota-limit Pass|mark the Codex review requirement as Pass/);
 });
@@ -200,4 +200,25 @@ test("PR workflow connects event SHAs to the gate and propagates failures", () =
     env: { ...process.env, PR_BASE_SHA: "missing-event-base", PR_HEAD_SHA: head },
   });
   assert.equal(invalid.status, 2);
+});
+
+test("one initial review per provider; finding fixes use verification, not a new review", () => {
+  assert.match(skill, /Do not request a second full or focused correction review/);
+  assert.match(skill, /record the original reviewed SHA, the final SHA, the exact fixing diff and verification results/);
+  assert.match(skill, /Unrelated scope belongs in a separate PR/);
+  const sizeRule = skill.split("\n").find((line) => line.startsWith("A successful measurement does not establish external coverage:"));
+  assert.match(sizeRule, /complete result and per-path coverage of the original review head/);
+  assert.match(skill, /External review status and per-path coverage of the original review head require separate evidence/);
+  assert.doesNotMatch(skill, /Current-HEAD external review status/);
+  const readme = readFileSync(new URL("README.md", repositoryRoot), "utf8");
+  assert.match(readme, /原始送審 SHA 的完整結果與逐路徑覆蓋/);
+  assert.match(readme, /修正 findings 後不再請求審查/);
+  assert.doesNotMatch(readme, /當前 HEAD 的完整結果|外部審查結果的 HEAD/);
+  assert.doesNotMatch(skill, /obtain one focused verification|provider's scoped follow-up/);
+  const recovery = readFileSync(new URL("skills/using-jt-harness/references/stalled-codex-review.md", repositoryRoot), "utf8");
+  assert.match(recovery, /Never recover or repeat a completed review/);
+  const english = readFileSync(new URL("site/en/index.html", repositoryRoot), "utf8");
+  const chinese = readFileSync(new URL("site/index.html", repositoryRoot), "utf8");
+  assert.match(english, /Do not request a second full or focused review after fixing findings/);
+  assert.match(chinese, /修正 findings 後，不再請求完整或差異審查/);
 });
