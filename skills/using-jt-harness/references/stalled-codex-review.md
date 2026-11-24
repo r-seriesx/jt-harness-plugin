@@ -6,7 +6,7 @@ Use this only when obtaining a Codex review is already within the user's authori
 
 Read the current PR head, review receipts, summary, and all available summary-edit history. Track Code Review and Security Review separately: a security update is not code-review progress. Preserve the original trigger, request/start times, last fresh progress, observed errors or quota messages, and the timestamps of live checks. An edited summary can replace an older request's state; retain each request's evidence before another submission.
 
-If the required review already completed for the current head, use that result. A delayed user reply or automation wakeup does not create a new review request. If Code Review never started, check the repository connection, Code Review settings, automatic triggers and exact `@codex review` command before following the initial-request rule. If an authorized Security Review never started, check Security Review settings, its automatic trigger and exact `@codex security review` command before making that type's initial request. Preserve completed Code Review instead of requesting it again for a missing Security Review.
+Never recover or repeat a completed review. Retain the original review result and verify any finding fixes as described in the main skill. A delayed user reply or automation wakeup does not create a new review request. If Code Review never started, check the repository connection, Code Review settings, automatic triggers and exact `@codex review` command before following the initial-request rule. If an authorized Security Review never started, check Security Review settings, its automatic trigger and exact `@codex security review` command before making that type's initial request. Preserve completed Code Review instead of requesting it again for a missing Security Review.
 
 Explicit errors, quota limits and finished reviews with no result follow the existing review exceptions. A stale running label establishes neither active execution nor quota exhaustion. Report the recorded times, not an estimated duration without a starting event.
 
@@ -14,7 +14,7 @@ Explicit errors, quota limits and finished reviews with no result follow the exi
 
 Apply a documented provider recovery window when available. Otherwise, JT's internal default is at least 20 minutes without fresh progress in the unfinished review, confirmed by two live checks at least 5 minutes apart. These are internal detection thresholds, not an OpenAI timeout or SLA. Fresh progress means continue waiting with backed-off checks and independent task work.
 
-Before recovering, reread the current head and results to catch a completion or new commit. Recover only the same unresolved head; a new head requires its own complete review coverage. The recovery budget is one per repository, PR and head, shared by Code Review and Security Review.
+Before recovering, reread the current head and results to catch a completion or new commit. Recover only the same unresolved head; if the head changed while the original review was unfinished, stop and reconcile original coverage without spending another request. The recovery budget is one per repository, PR and head, shared by Code Review and Security Review.
 
 Use the PR's linked Linear issue as the canonical recovery record, with the repository/PR/head key and one designated recovery owner. Reconcile that record across chats, turns and automation runs. Establish a single writer or an atomic shared claim before reserving the attempt; separate local records are not shared ownership. If exclusive ownership cannot be verified, continue read-only investigation without submitting concurrently. Reserve the attempt before sending and retain it when submission outcome is unknown.
 
@@ -24,7 +24,7 @@ Immediately before submission, reread the head and both review results after any
 
 ## Finish or identify the remaining failure
 
-Require a completed result covering the current head before treating the review as complete. A request comment is not acceptance, and acceptance is not completion. Continue the existing findings, lint, CI, mergeability and publication checks as soon as their gates pass; routine recovery is not a new human approval gate.
+Require a completed result covering the original review head before treating the review as complete. A request comment is not acceptance, and acceptance is not completion. Continue the existing findings, lint, CI, mergeability and publication checks as soon as their gates pass; routine recovery is not a new human approval gate.
 
 Before declaring a blocker or applying an error exception, reconcile the current head and both original and recovery outcomes. A completed matching result from either request can satisfy that review type. Scope an error or limit to the request, review type and head that produced it: a failed recovery or Security Review does not waive an original Code Review that remains queued or running. Verified cancellation ends that original request; an unsupported cancellation does not.
 
