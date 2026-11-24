@@ -145,7 +145,7 @@ test("JT Harness 规定一次审查、CodeRabbit 退路和自动合并条件", (
     "Codex and CodeRabbit are independent of each other",
     "Lint, required checks and mergeability below still apply",
     "Wait for queued or running reviews to finish",
-    "per-path coverage from each of Codex and CodeRabbit that is not ignored",
+    "per-path coverage of the original review head from each of Codex and CodeRabbit that is not ignored",
     "Do not request a second full or focused correction review",
     "required checks pass on the current head",
     "full-project lint locally",
@@ -206,6 +206,14 @@ test("one initial review per provider; finding fixes use verification, not a new
   assert.match(skill, /Do not request a second full or focused correction review/);
   assert.match(skill, /record the original reviewed SHA, the final SHA, the exact fixing diff and verification results/);
   assert.match(skill, /Unrelated scope belongs in a separate PR/);
+  const sizeRule = skill.split("\n").find((line) => line.startsWith("A successful measurement does not establish external coverage:"));
+  assert.match(sizeRule, /complete result and per-path coverage of the original review head/);
+  assert.match(skill, /External review status and per-path coverage of the original review head require separate evidence/);
+  assert.doesNotMatch(skill, /Current-HEAD external review status/);
+  const readme = readFileSync(new URL("README.md", repositoryRoot), "utf8");
+  assert.match(readme, /原始送審 SHA 的完整結果與逐路徑覆蓋/);
+  assert.match(readme, /修正 findings 後不再請求審查/);
+  assert.doesNotMatch(readme, /當前 HEAD 的完整結果|外部審查結果的 HEAD/);
   assert.doesNotMatch(skill, /obtain one focused verification|provider's scoped follow-up/);
   const recovery = readFileSync(new URL("skills/using-jt-harness/references/stalled-codex-review.md", repositoryRoot), "utf8");
   assert.match(recovery, /Never recover or repeat a completed review/);
