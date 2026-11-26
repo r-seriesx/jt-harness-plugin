@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.15](https://github.com/r-seriesx/jt-harness-plugin/compare/v2.4.14...v2.4.15) (2026-11-26)
+
+
+### 🐛 Bug Fixes
+
+* **review:** accept completed PR feedback in review summaries ([#74](https://github.com/r-seriesx/jt-harness-plugin/issues/74)) ([6bd91db](https://github.com/r-seriesx/jt-harness-plugin/commit/6bd91db7476519367c574191c16a1dc0e84f6799))
+
 ## [2.4.14](https://github.com/r-seriesx/jt-harness-plugin/compare/v2.4.13...v2.4.14) (2026-11-24)
 
 
