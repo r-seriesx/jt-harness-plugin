@@ -14,7 +14,7 @@ Explicit errors, quota limits and finished reviews with no result follow the exi
 
 Apply a documented provider recovery window when available. Otherwise, JT's internal default is at least 20 minutes without fresh progress in the unfinished review, confirmed by two live checks at least 5 minutes apart. These are internal detection thresholds, not an OpenAI timeout or SLA. Fresh progress means continue waiting with backed-off checks and independent task work.
 
-Before recovering, reread the current head and results to catch a completion or new commit. Recover only the same unresolved head; if the head changed while the original review was unfinished, stop and reconcile original coverage without spending another request. The recovery budget is one per repository, PR and head, shared by Code Review and Security Review.
+Before recovering, reread the current head and results to catch a completion or new commit. Recover only the same unresolved head; if the head changed while the original review was unfinished, stop and reconcile the reviewed scope without spending another request. The recovery budget is one per repository, PR and head, shared by Code Review and Security Review.
 
 Use the PR's linked Linear issue as the canonical recovery record, with the repository/PR/head key and one designated recovery owner. Reconcile that record across chats, turns and automation runs. Establish a single writer or an atomic shared claim before reserving the attempt; separate local records are not shared ownership. If exclusive ownership cannot be verified, continue read-only investigation without submitting concurrently. Reserve the attempt before sending and retain it when submission outcome is unknown.
 
@@ -24,7 +24,7 @@ Immediately before submission, reread the head and both review results after any
 
 ## Finish or identify the remaining failure
 
-Require a completed result covering the original review head before treating the review as complete. A request comment is not acceptance, and acceptance is not completion. Continue the existing findings, lint, CI, mergeability and publication checks as soon as their gates pass; routine recovery is not a new human approval gate.
+Apply the main skill’s PR evidence rule. A complete review of the PR scope does not have to match the first pushed SHA, and failure to post inline comments does not by itself make the analysis incomplete. A request comment is not acceptance, and acceptance is not completion. Continue the existing findings, lint, CI, mergeability and publication checks as soon as their gates pass; routine recovery is not a new human approval gate.
 
 Before declaring a blocker or applying an error exception, reconcile the current head and both original and recovery outcomes. A completed matching result from either request can satisfy that review type. Scope an error or limit to the request, review type and head that produced it: a failed recovery or Security Review does not waive an original Code Review that remains queued or running. Verified cancellation ends that original request; an unsupported cancellation does not.
 

@@ -30,14 +30,14 @@ codex plugin add jt-harness-plugin@jurislm-jt-harness
 在目標 repository 執行 `node /path/to/jt-harness-plugin/scripts/review-size-gate.mjs <實際PR目標ref> HEAD`。
 在本 plugin 目錄也可用 `npm run review:size -- <實際PR目標ref> HEAD`。
 輸出完整 JSON coverage，成功退出碼為 0，超過明定 repository 門檻為 1，無法可靠計數為 2。
-預設不套用 changed paths、行數或 patch bytes 上限；完整記錄所有變更的量測與路徑，不推定廠商有通用行數上限。既有 repository 明定的限制仍必須遵守。先提交完整合理範圍，不依 JT 大小估計預先拆分。大小通過不代表完整審查，未依 Skill 例外忽略的 Codex／CodeRabbit 審查，均須提供原始送審 SHA 的完整結果與逐路徑覆蓋；實際因範圍被跳過或不完整時，必須拆成可獨立驗證的 PR。
+預設不套用 changed paths、行數或 patch bytes 上限；完整記錄所有變更的量測與路徑，不推定廠商有通用行數上限。既有 repository 明定的限制仍必須遵守。先提交完整合理範圍，不依 JT 大小估計預先拆分。大小通過不代表完整審查，未依 Skill 例外忽略的 Codex／CodeRabbit 審查，均須提供PR 範圍的完整結果與逐路徑覆蓋，不限定第一次推送的 SHA；實際因範圍被跳過或不完整時，必須拆成可獨立驗證的 PR。
 可用第三參數 JSON 指定 repository 門檻，例如 `'{"changedPaths":10}'`。等於門檻可通過，超過明定門檻須按可驗收功能拆 PR；本機與 CI 應傳入相同限制，不以拆分繞過 quota。
 大小通過不代表審查通過，完整規則與官方來源見 Skill。
 
 本機入口需手動執行；`npm run validate` 執行 gate 與 CI 接線測試，未安裝 Git hook。
 計數只涵蓋已提交的 merge-base 至 HEAD，未提交、已 stage 但未 commit、未追蹤檔都不計入。
 下次交付時先核對 `git status` 並將預定範圍納入本機 commit，再以實際 PR target 執行 gate，通過後才首次 push。
-commit、rebase 或 retarget 後須重跑 size gate；此 script 不驗證外部審查狀態。修正 findings 後不再請求審查；另外記錄原始送審 SHA、最終 SHA、確切修正差異及驗證結果。全專案 lint 與必要 CI 檢查須在最終 HEAD 通過；原審查不涵蓋修正。
+commit、rebase 或 retarget 後須重跑 size gate；此 script 不驗證外部審查狀態。供應商已完成 PR 分析，且摘要或報告列出全部意見時，行內留言貼不上不必重審。修正 findings 後不再請求審查；另外記錄實際審查的 SHA、最終 SHA、確切修正差異及驗證結果。全專案 lint 與必要 CI 檢查須在最終 HEAD 通過；原審查不涵蓋修正。
 
 `.github/workflows/review-size.yml` 提供 `pull_request` CI 入口，以事件的 base/head SHA 與完整歷史執行同一 gate，超標或計數失敗會使 job 失敗。
 workflow 需存在於遠端事件版本且 GitHub Actions 已啟用才會執行，涵蓋新 PR、更新 commit、重開與修改 target；僅本機修改不會啟用遠端檢查。
